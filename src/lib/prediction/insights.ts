@@ -17,18 +17,18 @@ export function getPredictiveInsights(
   const insights: string[] = [];
 
   if (triggeredRules.includes("short_sleep_3_nights")) {
-    insights.push("Aim for 7+ hours tonight to recover.");
+    insights.push("Aiming for 7+ hours tonight is associated with improved recovery.");
   }
   if (triggeredRules.includes("chronic_short_sleep")) {
-    insights.push("Prioritize sleep for 2–3 nights to restore cognitive capacity.");
+    insights.push("Prioritizing sleep for 2–3 nights may help restore cognitive capacity.");
   }
   if (triggeredRules.includes("sleep_midpoint_shift")) {
-    insights.push("Stabilize bedtime tonight for better focus tomorrow.");
+    insights.push("Stabilizing bedtime tonight is associated with better focus tomorrow.");
   }
 
   const sleepDebt = computeSleepDebt(sleepRecords);
   if (sleepDebt > 120) {
-    insights.push("Sleep debt building – consider a wind-down routine tonight.");
+    insights.push("Sleep debt is building – a wind-down routine tonight may help.");
   }
 
   const last3 = sleepRecords.slice(0, 3);

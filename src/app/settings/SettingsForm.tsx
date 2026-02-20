@@ -192,6 +192,39 @@ export function SettingsForm({ email, timezone, chronotype }: SettingsFormProps)
         <SleepImportForm />
       </div>
 
+      <div className="border-t border-[var(--border-subtle)] pt-6">
+        <p className="text-sm font-medium text-text-primary">
+          Tools
+        </p>
+        <p className="mt-0.5 text-xs text-text-muted">
+          For specific situations
+        </p>
+        <div className="mt-3 space-y-3">
+          <Link
+            href="/events"
+            className="block rounded-xl border border-[var(--border-subtle)] bg-bg-card p-4 shadow-[var(--shadow-soft)] transition-colors hover:bg-accent-muted"
+          >
+            <p className="text-sm font-medium text-text-primary">
+              Event Optimization
+            </p>
+            <p className="mt-0.5 text-xs text-text-muted">
+              Optimize sleep for a big meeting, presentation, or event
+            </p>
+          </Link>
+          <Link
+            href="/travel"
+            className="block rounded-xl border border-[var(--border-subtle)] bg-bg-card p-4 shadow-[var(--shadow-soft)] transition-colors hover:bg-accent-muted"
+          >
+            <p className="text-sm font-medium text-text-primary">
+              Travel Impact
+            </p>
+            <p className="mt-0.5 text-xs text-text-muted">
+              Jet lag recovery and travel planning
+            </p>
+          </Link>
+        </div>
+      </div>
+
       <form action="/api/auth/signout" method="POST">
         <button
           type="submit"

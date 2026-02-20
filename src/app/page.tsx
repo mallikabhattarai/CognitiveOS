@@ -2,7 +2,31 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
-export default async function LandingPage() {
+export const dynamic = "force-dynamic";
+
+export default async function LandingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ code?: string; next?: string }>;
+}) {
+  const params = await searchParams;
+  if (params?.code) {
+    const next = params.next ?? "/home";
+    // #region agent log
+    fetch("http://127.0.0.1:7242/ingest/47e11e42-6a9c-48e8-ad75-14af6ae07abb", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        location: "page.tsx:root",
+        message: "root received code, redirecting to callback",
+        data: { hasCode: true, next, hypothesisId: "h4" },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+    redirect(`/auth/callback?code=${params.code}&next=${encodeURIComponent(next)}`);
+  }
+
   const supabase = await createClient();
   const {
     data: { user },

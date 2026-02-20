@@ -1,9 +1,10 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 
 type LoginFormProps = {
   supabaseUrl: string;
@@ -15,8 +16,16 @@ function LoginFormInner({ supabaseUrl, supabaseKey }: LoginFormProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const err = searchParams.get("error");
+    if (err === "auth") {
+      setError("Authentication failed. Please try again.");
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,12 +74,33 @@ function LoginFormInner({ supabaseUrl, supabaseKey }: LoginFormProps) {
           CognitiveOS — protect your cognitive performance
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+        <div className="mt-8 space-y-4">
           {error && (
             <div className="rounded-xl bg-risk-muted p-3 text-sm text-risk">
               {error}
             </div>
           )}
+          <GoogleSignInButton
+            supabaseUrl={supabaseUrl}
+            supabaseKey={supabaseKey}
+            next={searchParams.get("next") ?? "/home"}
+            onError={setError}
+            onLoadingChange={setGoogleLoading}
+            disabled={loading || googleLoading}
+          >
+            {googleLoading ? "Redirecting…" : "Continue with Google"}
+          </GoogleSignInButton>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-[var(--border-subtle)]" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-bg-base px-2 text-text-muted">or</span>
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
             <label
               htmlFor="email"

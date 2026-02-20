@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/BottomNav";
+import { AuthCodeRedirect } from "@/components/AuthCodeRedirect";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +35,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Suspense fallback={null}>
+          <AuthCodeRedirect />
+        </Suspense>
         <div className="mx-auto min-h-screen max-w-[428px] bg-bg-base pb-16 sm:border-x sm:border-[var(--border-subtle)]">
           {children}
           <BottomNav />

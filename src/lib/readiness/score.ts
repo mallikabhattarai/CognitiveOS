@@ -1,16 +1,24 @@
 /**
  * Cognitive Edge Score 0–100 (formerly readiness).
- * Weighted: duration 30%, quality 25%, consistency 20%, behavioral 15%, energy 10%.
- * Sub-components: Strategic Clarity, Emotional Regulation, Cognitive Stamina.
+ * v2: Composite 25% Sleep Pressure, 25% Circadian Alignment, 25% Architecture, 25% Consistency.
+ * Legacy: duration 30%, quality 25%, consistency 20%, behavioral 15%, energy 10%.
  */
 
 export type EdgeComponentLabel = "Strong" | "Moderate" | "Slightly Reduced" | "Reduced";
+
+export type EdgeScoreBreakdown = {
+  sleep_pressure: number;
+  circadian_timing: number;
+  architecture_stability: number;
+  fragmentation_risk: number;
+};
 
 export type EdgeScoreResult = {
   edge_score: number;
   strategic_clarity: EdgeComponentLabel;
   emotional_regulation: EdgeComponentLabel;
   cognitive_stamina: EdgeComponentLabel;
+  breakdown?: EdgeScoreBreakdown;
 };
 
 type SleepInput = {
@@ -30,6 +38,16 @@ type CheckInInput = {
   stress_level?: number | null;
 };
 
+export type PhysiologicalInputs = {
+  sleep_pressure_pct: number;
+  circadian_alignment_pct: number;
+  predicted_n3_pct: number;
+  predicted_rem_pct: number;
+  predicted_efficiency: number;
+  fragmentation_risk: number;
+  consistency_score: number;
+};
+
 function scoreToLabel(score: number): EdgeComponentLabel {
   if (score >= 80) return "Strong";
   if (score >= 50) return "Moderate";
@@ -40,16 +58,22 @@ function scoreToLabel(score: number): EdgeComponentLabel {
 export function computeReadinessScore(
   latestSleep: SleepInput | null,
   recentSleep: SleepInput[],
-  todayCheckIn: CheckInInput | null
+  todayCheckIn: CheckInInput | null,
+  physiological?: PhysiologicalInputs
 ): number {
-  return computeEdgeScore(latestSleep, recentSleep, todayCheckIn).edge_score;
+  return computeEdgeScore(latestSleep, recentSleep, todayCheckIn, physiological).edge_score;
 }
 
 export function computeEdgeScore(
   latestSleep: SleepInput | null,
   recentSleep: SleepInput[],
-  todayCheckIn: CheckInInput | null
+  todayCheckIn: CheckInInput | null,
+  physiological?: PhysiologicalInputs
 ): EdgeScoreResult {
+  if (physiological) {
+    return computeEdgeScoreV2(physiological, todayCheckIn);
+  }
+
   const durationScore = scoreDuration(latestSleep?.duration_minutes ?? null);
   const qualityScore = scoreQuality(latestSleep?.quality_rating ?? null);
   const consistencyScore = scoreConsistency(recentSleep);
@@ -66,7 +90,6 @@ export function computeEdgeScore(
 
   const edge_score = Math.round(Math.max(0, Math.min(100, total)));
 
-  // Sub-components
   const strategicClarityRaw =
     (scoreMentalClarity(todayCheckIn) * 0.4 +
       qualityScore * 0.35 +
@@ -85,6 +108,49 @@ export function computeEdgeScore(
     strategic_clarity: scoreToLabel(strategicClarityRaw),
     emotional_regulation: scoreToLabel(emotionalRegulationRaw),
     cognitive_stamina: scoreToLabel(cognitiveStaminaRaw),
+  };
+}
+
+function computeEdgeScoreV2(
+  phys: PhysiologicalInputs,
+  todayCheckIn: CheckInInput | null
+): EdgeScoreResult {
+  const sleepPressureScore = Math.max(0, 100 - phys.sleep_pressure_pct * 1.5);
+  const circadianScore = phys.circadian_alignment_pct;
+  const architectureScore =
+    (phys.predicted_n3_pct / 25) * 30 +
+    (phys.predicted_rem_pct / 25) * 30 +
+    (phys.predicted_efficiency / 100) * 40;
+  const fragmentationScore = Math.max(0, 100 - phys.fragmentation_risk);
+  const consistencyScore = phys.consistency_score;
+
+  const breakdown: EdgeScoreBreakdown = {
+    sleep_pressure: Math.round(sleepPressureScore),
+    circadian_timing: Math.round(circadianScore),
+    architecture_stability: Math.round(Math.min(100, architectureScore)),
+    fragmentation_risk: Math.round(Math.min(100, (fragmentationScore + consistencyScore) / 2)),
+  };
+
+  const weights = { sleep_pressure: 0.25, circadian: 0.25, architecture: 0.25, consistency: 0.25 };
+  const total =
+    breakdown.sleep_pressure * weights.sleep_pressure +
+    breakdown.circadian_timing * weights.circadian +
+    breakdown.architecture_stability * weights.architecture +
+    breakdown.fragmentation_risk * weights.consistency;
+
+  const edge_score = Math.round(Math.max(0, Math.min(100, total)));
+
+  const energyScore = scoreEnergy(todayCheckIn);
+  const strategicClarityRaw = (breakdown.circadian_timing * 0.4 + breakdown.architecture_stability * 0.35 + breakdown.fragmentation_risk * 0.25);
+  const emotionalRegulationRaw = (energyScore * 0.4 + breakdown.fragmentation_risk * 0.3 + breakdown.architecture_stability * 0.3);
+  const cognitiveStaminaRaw = (breakdown.sleep_pressure * 0.4 + energyScore * 0.3 + breakdown.architecture_stability * 0.3);
+
+  return {
+    edge_score,
+    strategic_clarity: scoreToLabel(strategicClarityRaw),
+    emotional_regulation: scoreToLabel(emotionalRegulationRaw),
+    cognitive_stamina: scoreToLabel(cognitiveStaminaRaw),
+    breakdown,
   };
 }
 

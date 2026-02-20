@@ -8,7 +8,7 @@ const PROTOCOL_MAP: Record<
   },
   chronic_short_sleep: {
     text: "Recovery: prioritize sleep for 2–3 nights",
-    secondary: "Reduce meeting load; defer non-urgent decisions",
+    secondary: "Consider reducing meeting load; defer non-urgent decisions",
   },
   sleep_midpoint_shift: {
     text: "Stabilize bedtime and wake time",
@@ -16,7 +16,7 @@ const PROTOCOL_MAP: Record<
   },
   low_quality_3_nights: {
     text: "Wind-down: reduce screens 1h before bed",
-    secondary: "Consider earlier bedtime",
+    secondary: "Earlier bedtime may help",
   },
   clarity_drop: {
     text: "Light cognitive load today",

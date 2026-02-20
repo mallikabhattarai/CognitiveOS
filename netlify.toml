@@ -1,0 +1,10 @@
+# Netlify configuration for Next.js
+# If your repo root is the parent folder (e.g. CognitiveOS1), set Base directory to "cognitiveos-app" in Netlify Dashboard
+
+[build]
+  command = "npm run build"
+
+# @netlify/plugin-nextjs handles Next.js routing (SSR, API routes, /auth/callback, etc.)
+# Do NOT add [[redirects]] that override / or /auth/callback - they would break auth
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

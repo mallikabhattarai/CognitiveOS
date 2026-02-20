@@ -26,8 +26,8 @@ export default async function HomePage() {
 
   return (
     <main className="flex min-h-screen flex-col p-6">
-      <header>
-        <h1 className="text-xl font-medium tracking-tight text-text-primary">
+      <header className="border-b border-[var(--border-subtle)] pb-4">
+        <h1 className="text-lg font-semibold tracking-tight text-text-primary">
           CognitiveOS
         </h1>
       </header>

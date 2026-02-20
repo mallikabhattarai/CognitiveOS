@@ -44,20 +44,8 @@ export async function GET(request: NextRequest) {
   const prediction = await runPrediction(supabase, user.id, date);
   if (prediction) {
     return NextResponse.json({
-      risk_level: prediction.risk_level,
-      risk_horizon_hours: prediction.risk_horizon_hours,
-      triggered_rules: prediction.triggered_rules,
-      protocol_actions: prediction.protocol_actions,
-      readiness_score: prediction.readiness_score,
-      edge_score: prediction.edge_score,
-      strategic_clarity: prediction.strategic_clarity,
-      emotional_regulation: prediction.emotional_regulation,
-      cognitive_stamina: prediction.cognitive_stamina,
-      peak_windows: prediction.peak_windows,
-      drift_status: prediction.drift_status,
-      drift_pct_5d: prediction.drift_pct_5d,
-      insights: prediction.insights,
-      recommendations: prediction.recommendations,
+      ...prediction,
+      edge_score: prediction.edge_score ?? prediction.readiness_score,
     });
   }
 

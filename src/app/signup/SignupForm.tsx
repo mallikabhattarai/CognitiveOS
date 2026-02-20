@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 
 type SignupFormProps = {
   supabaseUrl: string;
@@ -14,6 +15,7 @@ export function SignupForm({ supabaseUrl, supabaseKey }: SignupFormProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,7 +33,31 @@ export function SignupForm({ supabaseUrl, supabaseKey }: SignupFormProps) {
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const { error } = await supabase.auth.signUp({ email, password });
+    const emailRedirectTo =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/auth/callback`
+        : undefined;
+    // #region agent log
+    fetch("http://127.0.0.1:7242/ingest/47e11e42-6a9c-48e8-ad75-14af6ae07abb", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        location: "SignupForm.tsx:handleSubmit",
+        message: "signUp called",
+        data: {
+          origin: typeof window !== "undefined" ? window.location.origin : null,
+          emailRedirectTo,
+          hypothesisId: "h1",
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: emailRedirectTo ?? undefined },
+    });
 
     if (error) {
       setError(error.message);
@@ -53,7 +79,7 @@ export function SignupForm({ supabaseUrl, supabaseKey }: SignupFormProps) {
           CognitiveOS — protect your cognitive performance
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+        <div className="mt-8 space-y-4">
           {error && (
             <div className="rounded-xl bg-risk-muted p-3 text-sm text-risk">
               {error}
@@ -64,6 +90,27 @@ export function SignupForm({ supabaseUrl, supabaseKey }: SignupFormProps) {
               {message}
             </div>
           )}
+          <GoogleSignInButton
+            supabaseUrl={supabaseUrl}
+            supabaseKey={supabaseKey}
+            next="/home"
+            onError={setError}
+            onLoadingChange={setGoogleLoading}
+            disabled={loading || googleLoading}
+          >
+            {googleLoading ? "Redirecting…" : "Continue with Google"}
+          </GoogleSignInButton>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-[var(--border-subtle)]" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-bg-base px-2 text-text-muted">or</span>
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
             <label
               htmlFor="email"
