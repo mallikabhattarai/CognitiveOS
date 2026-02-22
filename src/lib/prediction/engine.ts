@@ -76,11 +76,8 @@ export async function runPrediction(
 ): Promise<PredictionResult | null> {
   const { data: sleepRecords } = await supabase
     .from("sleep_records")
-    .select(
-      "date, duration_minutes, quality_rating, bedtime, wake_time, caffeine_after_2pm, alcohol_tonight, screen_time_minutes, exercise_today, nap_duration_minutes"
-    )
+    .select("*")
     .eq("user_id", userId)
-    .lte("date", date)
     .order("date", { ascending: false })
     .limit(14);
 

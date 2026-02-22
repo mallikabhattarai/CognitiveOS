@@ -111,7 +111,7 @@ export function HomeClient({ userId }: { userId: string }) {
       const today = new Date().toISOString().slice(0, 10);
       const [checkInRes, predRes, sleepRes] = await Promise.all([
         fetchWithAuth(`/api/check-in?date=${today}`),
-        fetchWithAuth(`/api/prediction?date=${today}`),
+        fetchWithAuth(`/api/prediction?date=${today}`, { cache: "no-store" }),
         fetchWithAuth("/api/sleep?limit=7"),
       ]);
 

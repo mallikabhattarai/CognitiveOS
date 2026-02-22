@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { runPrediction } from "@/lib/prediction/engine";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const {
